@@ -2,18 +2,21 @@
 include("db_connect.php");
 
 $action = $_REQUEST['action'];
+
 if($action=='resume_theme'){
 
 	getjson("SELECT * FROM `resume_theme`");
 }
 else if ($action=="login") {
 
-	if ($_REQUEST['user']=="1") {
-		// echo "SELECT Job_seeker_ID FROM `job_seeker_tb` WHERE Student_email = '".$_GET['em']."' AND Student_password = '".$_GET['pass']."'";
-		getjson("SELECT Job_seeker_ID FROM `job_seeker_tb` WHERE Student_email = '".$_REQUEST['em']."' AND Student_password = '".$_REQUEST['pass']."'");
+	if ($_REQUEST['user']=='1') {	
+
+		getjson("SELECT * FROM `job_seeker_tb` WHERE Student_email = '".$_REQUEST['em']."' AND Student_password = '".$_REQUEST['pass']."'");
+	}
+	else if ($_REQUEST['user']=='2') {
+		
 	}
 }
-
 
 
 function getjson($query)
