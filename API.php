@@ -57,7 +57,24 @@ else if ($action=="registration") {
 	}
 	echo json_encode($response);
 }
+else if ($action == "JobFair_data") {
 
+			$query = "SELECT college_tb.College_name,college_tb.College_location,college_tb.College_email,college_tb.College_contact, job_fair_tb.Job_fair_id,job_fair_tb.Job_fair_start_date,job_fair_tb.Job_fair_end_date,job_fair_tb.Company_registration_start_date,job_fair_tb.Company_registration_end_date,job_fair_tb.Student_registration_start_date,job_fair_tb.Student_registration_end_date,job_fair_tb.IsOnline FROM college_tb,job_fair_tb WHERE college_tb.College_id = job_fair_tb.Host_college_id";
+			$response['status'] = 1;
+			$response['data'] = getDjson($query);
+			$response['message'] = "Data retrive successfully!";
+	echo json_encode($response);
+}
+
+
+else if ($action == "JobList") {
+
+			$query = "SELECT company_tb.Company_name,company_job_post_tb.Post_name,company_job_post_tb.Post_description,company_job_post_tb.Package_provided FROM company_job_post_tb,participated_company_tb,company_tb WHERE company_job_post_tb.Job_status = 1 AND company_job_post_tb.Participated_company_id = participated_company_tb.Company_id AND company_job_post_tb.Company_job_post_id=company_tb.Company_id AND participated_company_tb.Job_fair_id = ".$_REQUEST['Job_fair_id'];
+			$response['status'] = 1;
+			$response['data'] = getDjson($query);
+			$response['message'] = "Data retrive successfully!";
+	echo json_encode($response);
+}
 
 function getIjson($query)
 {
@@ -73,8 +90,8 @@ function getIjson($query)
 
 function getDjson($query)
 {
-	$response=array();
-	
+	$response['data']=array();
+	$data = array();
 	$obj=new DB_Connect;
 		// mysqli_set_charset($obj->$con1,"utf8");
 	$result=$obj->mysqlQuery($query);
@@ -83,8 +100,10 @@ function getDjson($query)
 	{
 		for($i=0;$i<$fields_num;$i++)
 		{
-			$response[mysqli_field_name($result,$i)]= htmlspecialchars(str_replace("*","'",$row[$i]));
+			$data[mysqli_field_name($result,$i)]= htmlspecialchars(str_replace("*","'",$row[$i]));
+			
 		}
+		array_push($response['data'], $data);
 	}
 	return $response;
 }
