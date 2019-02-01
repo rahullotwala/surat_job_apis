@@ -59,22 +59,81 @@ else if ($action=="registration") {
 }
 else if ($action == "JobFair_data") {
 
-			$query = "SELECT college_tb.College_name,college_tb.College_location,college_tb.College_email,college_tb.College_contact, job_fair_tb.Job_fair_id,job_fair_tb.Job_fair_start_date,job_fair_tb.Job_fair_end_date,job_fair_tb.Company_registration_start_date,job_fair_tb.Company_registration_end_date,job_fair_tb.Student_registration_start_date,job_fair_tb.Student_registration_end_date,job_fair_tb.IsOnline FROM college_tb,job_fair_tb WHERE college_tb.College_id = job_fair_tb.Host_college_id";
-			$response['status'] = 1;
-			$response['data'] = getDjson($query);
-			$response['message'] = "Data retrive successfully!";
+	$query = "SELECT college_tb.College_name,college_tb.College_location,college_tb.College_email,college_tb.College_contact, job_fair_tb.Job_fair_id,job_fair_tb.Job_fair_start_date,job_fair_tb.Job_fair_end_date,job_fair_tb.Company_registration_start_date,job_fair_tb.Company_registration_end_date,job_fair_tb.Student_registration_start_date,job_fair_tb.Student_registration_end_date,job_fair_tb.IsOnline FROM college_tb,job_fair_tb WHERE college_tb.College_id = job_fair_tb.Host_college_id";
+	$response['status'] = 1;
+	$response['data'] = getDjson($query);
+	$response['message'] = "Data retrive successfully!";
 	echo json_encode($response);
 }
 
 
 else if ($action == "JobList") {
 
-			$query = "SELECT company_tb.Company_name,company_job_post_tb.Post_name,company_job_post_tb.Post_description,company_job_post_tb.Package_provided FROM company_job_post_tb,participated_company_tb,company_tb WHERE company_job_post_tb.Job_status = 1 AND company_job_post_tb.Participated_company_id = participated_company_tb.Company_id AND company_job_post_tb.Company_job_post_id=company_tb.Company_id AND participated_company_tb.Job_fair_id = ".$_REQUEST['Job_fair_id'];
-			$response['status'] = 1;
-			$response['data'] = getDjson($query);
-			$response['message'] = "Data retrive successfully!";
+	$query = "SELECT company_tb.Company_name,company_job_post_tb.Post_name,company_job_post_tb.Post_description,company_job_post_tb.Package_provided FROM company_job_post_tb,participated_company_tb,company_tb WHERE company_job_post_tb.Job_status = 1 AND company_job_post_tb.Participated_company_id = participated_company_tb.Company_id AND company_job_post_tb.Company_job_post_id=company_tb.Company_id AND participated_company_tb.Job_fair_id = ".$_REQUEST['Job_fair_id'];
+	$response['status'] = 1;
+	$response['data'] = getDjson($query);
+	$response['message'] = "Data retrive successfully!";
 	echo json_encode($response);
 }
+
+else if ($action == "participate_jobFair") {
+
+	$response = array();
+	$query = "SELECT * FROM `applyforjobfair` WHERE applyforjobfair.JobSeekerId = ".$_REQUEST['JS_ID']." AND applyforjobfair.JobFairId = ".$_REQUEST['JF_ID'];
+
+	if (checkDataExistOrNot($query)>0) {
+
+		$response['status'] = 2;
+		$response['data'] = "You Have Already Applied";
+		$response['message'] = "Have a good Day!";
+
+	}else{
+
+		$query = "INSERT INTO `applyforjobfair`(`JobSeekerId`, `JobFairId`) VALUES (".$_REQUEST['JS_ID'].",".$_REQUEST['JF_ID'].")";
+		$obj=new DB_Connect;
+		$id = $obj->mysqlIQuery($query);
+
+		// echo "js id : ".$_REQUEST['JS_ID']." jf Id : ".$_REQUEST['JF_ID']." id : ".$id;
+
+		$query = "INSERT INTO apply_for_job_tb (ApplyJobFairId,Status) VALUES (".$id.",1)";
+
+		if (getIjson($query) == "valid") {
+			$response['status'] = 1;
+			$response['data'] = "valid";
+			$response['message'] = "You Have participated for this Job Fair!";
+		}else{
+
+			$response['status'] = 0;
+			$response['data'] = "Invalid";
+			$response['message'] = "Sorry sever error Try after sometime!";
+		}
+
+	}
+	echo json_encode($response);
+}
+else if ($action == "CheckApplication") {
+
+	$response = array();
+	$query = "SELECT * FROM `applyforjobfair` WHERE applyforjobfair.JobSeekerId = ".$_REQUEST['JS_ID']." AND applyforjobfair.JobFairId = ".$_REQUEST['JF_ID'];
+	// echo "string : ".checkDataExistOrNot($query);
+	if (checkDataExistOrNot($query)>0) {
+
+		$response['status'] = 1;
+		$response['data'] = "You Have Already Applied";
+		$response['message'] = "Have a good Day!";
+
+	}
+	else{
+
+		$response['status'] = 0;
+		$response['data'] = "Not Applied";
+		$response['message'] = "Have a good Day!";	
+
+	}
+	echo json_encode($response);
+
+}
+
 
 function getIjson($query)
 {
@@ -86,6 +145,16 @@ function getIjson($query)
 	else{
 		return "Invalid";
 	}
+}
+
+
+function checkDataExistOrNot($query)
+{
+	$obj=new DB_Connect;
+	$result=$obj->mysqlQuery($query);
+	$fields_num = mysqli_num_rows($result);
+	
+	return $fields_num;
 }
 
 function getDjson($query)

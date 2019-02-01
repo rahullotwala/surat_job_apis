@@ -31,5 +31,11 @@ class DB_Connect{
 		$res=mysqli_query($this->con1,$query);
 		return $res;
     }
+
+    public function mysqlIQuery($query) {
+        $res=mysqli_query($this->con1,$query);
+        $id=mysqli_insert_id($this->con1);
+        return $id;
+    }
 }
 ?>
